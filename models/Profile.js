@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
+const ObjectId = mongoose.Types.ObjectId;
 
 const profileSchema = new Schema({
   firstName: String,
@@ -12,9 +13,24 @@ const profileSchema = new Schema({
   instagram: String,
   reddit: String,
   youtube: String,
-  user_id: String
+  user_id: String,
+  role: String,
+  proUser: Boolean,
+  partner: Boolean,
+  stories: [{
+    type: ObjectId,
+    ref: "Story"
+  }],
+  profileCreated: {
+    type: Boolean,
+    default: false
+  },
+  created_at: {
+    type: Date,
+    default: Date.now()
+  }
 });
 
 const Profile = mongoose.model("Profile", profileSchema);
 
-modules.exports = Profile;
+module.exports = Profile;

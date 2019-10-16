@@ -4,8 +4,11 @@ import cors from 'cors';
 import config from './config';
 import mongoose from 'mongoose';
 import session from 'express-session';
-import passport from 'passport';
-import Auth0Strategy from 'passport-auth0';
+import uuidv4 from 'uuid/v4';
+import create from './api/profile';
+import story from './api/story';
+
+const MongoStore = require('connect-mongo')(session);
 
 require('dotenv').config();
 
@@ -13,13 +16,22 @@ const database = config[config.env].database;
 
 const db = mongoose.connection;
 const app = express();
-const port = process.env.PORT || '3001';
+const port = process.env.PORT || '4000';
 
-const sess = {
+export const sess = {
   secret: config.development.secret,
-  cookie: {},
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 * 2
+  },
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  store: new MongoStore({
+    mongooseConnection: db
+  }),
+  genid: function(req) {
+    return uuidv4() // use UUIDs for session IDs
+  },
+  name: "sid"
 };
 
 if (app.get('env') === 'production') {
@@ -31,46 +43,25 @@ if (app.get('env') === 'production') {
   // "Unable to verify authorization request state"
   app.set('trust proxy', 1);
 }
-
-const strategy = new Auth0Strategy(
-  {
-    domain: process.env.AUTH0_DOMAIN,
-    clientID: process.env.AUTH0_CLIENT_ID,
-    clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL:
-      process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
-  },
-  function (accessToken, refreshToken, extraParams, profile, done) {
-    // accessToken is the token to call Auth0 API (not needed in the most cases)
-    // extraParams.id_token has the JSON Web Token
-    // profile has all the information from the user
-    return done(null, profile);
-  }
-);
-
-passport.use(strategy);
-
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-  done(null, user);
-});
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 
 app.use(session(sess));
-app.use(passport.initialize());
-app.use(passport.session());
+
 app.use(express.static('helpers'))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
-app.use(cors());
-
 
 mongoose.connect(database, {useNewUrlParser: true});
+
+app.use('/api/profile', create);
+app.use('/api/story', story);
 
 db.on('error', console.error.bind(console, "Connection error"));
 db.once('open', () => console.log("Connected sucessfully to database"));
 
 
 app.listen(port, () => console.log("App running on " + port));
+
