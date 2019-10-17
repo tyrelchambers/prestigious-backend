@@ -14,11 +14,11 @@ app.post('/create', sessionValidation, async (req, res) => {
       body,
       tags,
       theme,
-      notes
+      notes,
+      draftId
     } = req.body;
     const profileId = await profileFromCookie(res.locals.sid);
     const profile = await Profile.findOne({_id: profileId});
-    
     const story = await Story.create({
       title,
       author,
@@ -45,6 +45,7 @@ app.post('/create', sessionValidation, async (req, res) => {
   }
 });
 
+// gets a profiles stories
 app.get('/profile', sessionValidation, async (req, res) => {
   try {
     const profileId = await profileFromCookie(res.locals.sid);

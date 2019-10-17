@@ -17,6 +17,10 @@ const profileSchema = new Schema({
   role: String,
   proUser: Boolean,
   partner: Boolean,
+  drafts: [{
+    type: ObjectId,
+    ref: "Draft"
+  }],
   stories: [{
     type: ObjectId,
     ref: "Story"

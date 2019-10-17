@@ -7,6 +7,7 @@ import session from 'express-session';
 import uuidv4 from 'uuid/v4';
 import create from './api/profile';
 import story from './api/story';
+import draft from './api/draft';
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -58,6 +59,7 @@ mongoose.connect(database, {useNewUrlParser: true});
 
 app.use('/api/profile', create);
 app.use('/api/story', story);
+app.use('/api/story/draft', draft);
 
 db.on('error', console.error.bind(console, "Connection error"));
 db.once('open', () => console.log("Connected sucessfully to database"));
