@@ -3,6 +3,7 @@ import sessionValidation from '../helpers/sessionValidation';
 import Story from '../models/Story';
 import Profile from '../models/Profile';
 import profileFromCookie from '../helpers/profileFromCookie';
+import Draft from '../models/Draft';
 
 const app = express.Router();
 
@@ -10,7 +11,7 @@ app.post('/create', sessionValidation, async (req, res) => {
   try {
     const {
       title,
-      author,
+      username,
       body,
       tags,
       theme,
@@ -21,13 +22,15 @@ app.post('/create', sessionValidation, async (req, res) => {
     const profile = await Profile.findOne({_id: profileId});
     const story = await Story.create({
       title,
-      author,
+      username,
       body,
       tags,
       theme,
       notes,
       profile_id: profile._id
     });
+
+    await Draft.deleteOne({_id: draftId});
     
     profile.save(err => {
       if (err) throw new Error(err);

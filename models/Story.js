@@ -6,7 +6,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const storySchema = new Schema({
   title: String,
   body: String,
-  author: String,
+  username: String,
   tags: [String],
   theme: [String],
   notes: String,

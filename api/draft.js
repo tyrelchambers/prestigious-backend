@@ -3,7 +3,7 @@ import sessionValidation from '../helpers/sessionValidation';
 import profileFromCookie from '../helpers/profileFromCookie';
 import Profile from '../models/Profile';
 import Draft from '../models/Draft';
-import Story from '../models/Story';
+import parseCookie from '../helpers/parseCookie';
 
 const app = express.Router();
 
@@ -11,21 +11,21 @@ app.post('/save', sessionValidation, async (req, res) => {
   try {
     const {
       title,
-      author,
+      username,
       body,
       tags,
       theme,
       notes,
       draftId
     } = req.body;
-    
+
     const profileId = await profileFromCookie(res.locals.sid);
     const profile = await Profile.findOne({_id: profileId});
 
     if ( draftId ) {
       await Draft.findOneAndUpdate({_id: draftId}, {
         title,
-        author,
+        username,
         body,
         tags,
         theme,
@@ -34,14 +34,17 @@ app.post('/save', sessionValidation, async (req, res) => {
         new: true
       });
 
-      res.send("Save successful");
+      res.send({
+        message: "Save successful",
+        draftId
+      });
     }
 
     if ( !draftId ) {
-         
+          
       const draft = await Draft.create({
         title,
-        author,
+        username,
         body,
         tags,
         theme,
@@ -67,6 +70,22 @@ app.post('/save', sessionValidation, async (req, res) => {
 
   catch(err) {
     console.log(err);
+  }
+});
+
+app.get('/:id', sessionValidation, async (req, res) => {
+  try {
+    const draftId = parseCookie(req.params.id, "draftId");
+
+    if ( !draftId ) throw new Error("Incorrect ID sent");
+
+    const draft = await Draft.findOne({_id: draftId});
+    res.send(draft);
+  }
+
+  catch(err) {
+    console.log(err);
+    res.status(500).send({error: err});
   }
 });
 
