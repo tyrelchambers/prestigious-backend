@@ -16,8 +16,10 @@ app.post('/create', sessionValidation, async (req, res) => {
       tags,
       theme,
       notes,
-      draftId
+      draftId,
+      bannerUrl
     } = req.body;
+
     const profileId = await profileFromCookie(res.locals.sid);
     const profile = await Profile.findOne({_id: profileId});
     const story = await Story.create({
@@ -27,6 +29,7 @@ app.post('/create', sessionValidation, async (req, res) => {
       tags,
       theme,
       notes,
+      bannerUrl,
       profile_id: profile._id
     });
 

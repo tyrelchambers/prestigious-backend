@@ -10,6 +10,7 @@ const storySchema = new Schema({
   tags: [String],
   theme: [String],
   notes: String,
+  bannerUrl: String,
   profile_id: {
     type: ObjectId,
     ref: "Profile"
