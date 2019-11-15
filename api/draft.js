@@ -73,10 +73,26 @@ app.post('/save', sessionValidation, async (req, res) => {
   }
 });
 
+app.delete('/:id', sessionValidation, async (req, res) => {
+  try {
+    const { 
+      id
+    } = req.params;
+    const profileId = await profileFromCookie(res.locals.sid);
+    await Draft.findOneAndDelete({_id: id, profile_id: profileId});
+
+    res.send("Draft deleted");
+  }
+
+  catch(err) {
+    console.log(err);
+    res.status(500).send({error: err});
+  }
+});
+
 app.get('/:id', sessionValidation, async (req, res) => {
   try {
     const draftId = parseCookie(req.params.id, "draftId");
-
     if ( !draftId ) throw new Error("Incorrect ID sent");
 
     const draft = await Draft.findOne({_id: draftId});

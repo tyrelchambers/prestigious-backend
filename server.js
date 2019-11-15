@@ -5,9 +5,10 @@ import config from './config';
 import mongoose from 'mongoose';
 import session from 'express-session';
 import uuidv4 from 'uuid/v4';
-import create from './api/profile';
+import profile from './api/profile';
 import story from './api/story';
 import draft from './api/draft';
+import sessions from './api/sessions';
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -22,7 +23,7 @@ const port = process.env.PORT || '4000';
 export const sess = {
   secret: config.development.secret,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7 * 2
+    maxAge: 1000 * 60 * 60 * 24
   },
   resave: false,
   saveUninitialized: false,
@@ -57,9 +58,10 @@ app.use(bodyParser.urlencoded({ extended: true}));
 
 mongoose.connect(database, {useNewUrlParser: true});
 
-app.use('/api/profile', create);
+app.use('/api/profile', profile);
 app.use('/api/story', story);
 app.use('/api/story/draft', draft);
+app.use('/api/sessions', sessions);
 
 db.on('error', console.error.bind(console, "Connection error"));
 db.once('open', () => console.log("Connected sucessfully to database"));

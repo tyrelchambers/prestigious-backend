@@ -11,6 +11,14 @@ const storySchema = new Schema({
   theme: [String],
   notes: String,
   bannerUrl: String,
+  likes: {
+    type: Number,
+    default: 0
+  },
+  views: {
+    type: Number,
+    default: 0
+  },
   profile_id: {
     type: ObjectId,
     ref: "Profile"

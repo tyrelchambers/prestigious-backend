@@ -1,8 +1,8 @@
 import express from 'express';
 import Profile from '../models/Profile';
-import parseCookie from '../helpers/parseCookie';
 import profileFromCookie from '../helpers/profileFromCookie';
 import sessionValidation from '../helpers/sessionValidation';
+import Draft from '../models/Draft';
 
 const app = express.Router();
 
@@ -64,5 +64,19 @@ app.get('/getProfile', sessionValidation, async (req, res) => {
     res.send({error: err});
   }
 })
+
+app.get('/drafts', sessionValidation, async (req, res) => {
+  try {
+    const profileId = await profileFromCookie(res.locals.sid);
+    const drafts = await Draft.find({profile_id: profileId});
+
+    res.send(drafts);
+  }
+
+  catch(err) {
+    console.log(err)
+    res.status(500).send(err);
+  }
+});
 
 module.exports = app;
