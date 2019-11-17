@@ -60,7 +60,7 @@ mongoose.connect(database, {useNewUrlParser: true});
 
 app.use('/api/profile', profile);
 app.use('/api/story', story);
-app.use('/api/story/draft', draft);
+app.use('/api/draft', draft);
 app.use('/api/sessions', sessions);
 
 db.on('error', console.error.bind(console, "Connection error"));

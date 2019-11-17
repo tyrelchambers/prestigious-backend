@@ -73,13 +73,60 @@ app.post('/save', sessionValidation, async (req, res) => {
   }
 });
 
-app.delete('/:id', sessionValidation, async (req, res) => {
+app.post('/edit', sessionValidation, async (req, res) => {
+  try {
+    const {
+      title,
+      username,
+      body,
+      tags,
+      theme,
+      notes,
+      bannerUrl,
+      id
+    } = req.body;
+
+    await Draft.findOneAndUpdate({_id: id}, {
+      title,
+      username,
+      body,
+      tags,
+      theme,
+      notes,
+      bannerUrl,
+    });
+
+    res.send("Draft updated succesfully");
+  }
+
+  catch(err) {
+    console.log(err);
+    res.status(500).send({error: err});
+  }
+})
+
+app.delete('/id/:id', sessionValidation, async (req, res) => {
   try {
     const { 
       id
     } = req.params;
+    
     const profileId = await profileFromCookie(res.locals.sid);
+    const profile = await Profile.findOne({_id: profileId});
+
     await Draft.findOneAndDelete({_id: id, profile_id: profileId});
+
+    profile.save(err => {
+      if ( err ) throw new Error(err);
+
+      profile.drafts.filter((x, xID) => {
+        if ( x == id ) {
+          profile.drafts.splice(xID, 1);
+        }
+      });
+
+      profile.save();
+    });
 
     res.send("Draft deleted");
   }
@@ -90,7 +137,7 @@ app.delete('/:id', sessionValidation, async (req, res) => {
   }
 });
 
-app.get('/:id', sessionValidation, async (req, res) => {
+app.get('/id/:id', sessionValidation, async (req, res) => {
   try {
     const draftId = parseCookie(req.params.id, "draftId");
     if ( !draftId ) throw new Error("Incorrect ID sent");

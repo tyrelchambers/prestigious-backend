@@ -5,6 +5,7 @@ import Profile from '../models/Profile';
 import profileFromCookie from '../helpers/profileFromCookie';
 import Draft from '../models/Draft';
 import parseCookie from '../helpers/parseCookie';
+import isEmpty from '../helpers/emptyObject';
 
 const app = express.Router();
 
@@ -56,12 +57,20 @@ app.post('/create', sessionValidation, async (req, res) => {
 
 app.get('/all', async ( req, res ) => {
   try {
-    const { 
-      t,
-      count
-    } = req.query;
 
-    const stories = await Story.find();
+    const params = new URLSearchParams(req.query);
+
+    const query = {};
+
+    if (params.has("theme")) {
+      query.theme = params.get("theme");
+    }
+
+    if (params.has("t")) {
+      query.created_at = params.get('t');
+    }
+
+    let stories = await Story.find(query);
 
     res.send(stories);
   }
@@ -126,7 +135,22 @@ app.delete('/id/:id', sessionValidation, async (req, res) => {
     } = req.params;
 
     const profileId = await profileFromCookie(res.locals.sid);
+    const profile = await Profile.findOne({_id: profileId});
+
     await Story.findOneAndDelete({_id: id, profile_id: profileId});
+
+    
+    profile.save(err => {
+      if ( err ) throw new Error(err);
+
+      profile.stories.filter((x, xID) => {
+        if ( x == id ) {
+          profile.stories.splice(xID, 1);
+        }
+      });
+
+      profile.save();
+    });
 
     res.send("Story deleted");
   }

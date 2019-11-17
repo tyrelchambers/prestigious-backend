@@ -1,0 +1,4 @@
+const DAY = 86400000;
+const HOUR = 3600000;
+const MONTH = 2629800000;
+const YEAR = 31557600000;
