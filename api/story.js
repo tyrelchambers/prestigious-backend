@@ -165,6 +165,13 @@ app.get('/title/:title', async (req, res) => {
   try {
     const story = await Story.findOne({title: req.params.title}).populate("profile_id");
     res.send(story);
+
+    story.save(err => {
+      if (err) throw new Error(err);
+
+      story.views++;
+      story.save();
+    });
   }
 
   catch(err) {
@@ -180,6 +187,7 @@ app.get('/id/:id', sessionValidation, async (req, res) => {
     if ( !storyId ) throw new Error("Incorrect ID sent");
 
     const story = await Story.findOne({_id: storyId});
+
     res.send(story);
   }
 
@@ -189,8 +197,42 @@ app.get('/id/:id', sessionValidation, async (req, res) => {
   }
 });
 
+app.patch('/like/:id', sessionValidation, async (req, res) => {
+  try {
+    const {
+      id
+    } = req.params;
 
+    const profileId = await profileFromCookie(res.locals.sid);
+    const profile = await Profile.findOne({_id: profileId});
+    const story = await Story.findOneAndUpdate({_id: id}, { $push: {likedBy: profile._id}});
+    
+    res.sendStatus(200);
+  }
 
+  catch(err) {
+    console.log(err)
+    res.status(500).send({error: err});
+  }
+});
 
+app.patch('/dislike/:id', sessionValidation, async (req, res) => {
+  try {
+    const {
+      id
+    } = req.params;
+
+    const profileId = await profileFromCookie(res.locals.sid);
+    const profile = await Profile.findOne({_id: profileId});
+    const story = await Story.findOneAndUpdate({_id: id}, { $pull: { likedBy: profile._id}});
+    
+    res.sendStatus(200);
+  }
+
+  catch(err) {
+    console.log(err)
+    res.status(500).send({error: err});
+  }
+});
 
 module.exports = app;

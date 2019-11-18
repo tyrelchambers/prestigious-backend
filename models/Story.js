@@ -11,10 +11,10 @@ const storySchema = new Schema({
   theme: [String],
   notes: String,
   bannerUrl: String,
-  likes: {
-    type: Number,
-    default: 0
-  },
+  likedBy: [{
+    type: ObjectId,
+    ref: "Profile"
+  }],
   views: {
     type: Number,
     default: 0
